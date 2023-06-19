@@ -11,14 +11,17 @@ from pymongo import MongoClient
 
 
 class Zoom:
-    def __init__(self, mongo_client: MongoClient):
-        self.mongo_client = mongo_client
-
-        self.db = self.mongo_client["zoom_app"]
-        self.collection = self.db["records"]
+    def __init__(self):
         pass
 
-    def get_zoom_records(self, url: str, password: str, isHeadless: bool = True):
+    def get_zoom_records(
+        self,
+        url: str,
+        password: str,
+        message: str,
+        lecture_date: str,
+        isHeadless: bool = True,
+    ):
         driver = self._run_chrome(url, isHeadless)
         time.sleep(20)
 
@@ -62,12 +65,13 @@ class Zoom:
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
         data = {
+            "message": message,
+            "lecture_date": lecture_date,
             "result": result,
             "created_at": formatted_time,
         }
 
-        # 몽고에 넣기
-        self.collection.insert_one(data)
+        return data
 
     def _run_chrome(self, url, isHeadless):
         options = webdriver.ChromeOptions()
