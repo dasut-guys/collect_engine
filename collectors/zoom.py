@@ -63,12 +63,12 @@ class Zoom:
         res = requests.get(finalUrl, cookies=new_cookies)
         result = res.json()["result"]
         current_time = datetime.now()
-        formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
         data = {
             "message": message,
             "lecture_date": lecture_date,
             "result": result,
-            "created_at": formatted_time,
+            "created_at": current_time,
         }
 
         return data
