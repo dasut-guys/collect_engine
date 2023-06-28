@@ -54,9 +54,7 @@ def today_live_records(**context):
             if slack_repo.check_message_id(record["message_id"]):
                 continue            
             new_records.append(record)
-        print("--- new records ----")
-        print(new_records)
-        print("-------------------")
+  
         # insert new records into mongodb
         for record in new_records:
             
@@ -85,8 +83,7 @@ def get_zoom_records(**context):
         zoom_record = zoom_collector.get_zoom_records(record['video_link'], record['password'], record['lecture_date'])
         zoom_records.append(zoom_record)
         time.sleep(10)
-    print("zoom records")
-    print("zoom_record")
+
     context['task_instance'].xcom_push(key='zoom_records', value = zoom_records)
     return zoom_records
 
@@ -101,7 +98,7 @@ def insert_zoom_records(**context):
     for zoom_record in zoom_records:
          zoom_repo.insert_recording_info(zoom_record["message"], zoom_record["lecture_date"], zoom_record["result"], zoom_record["created_at"])
     
-    print(zoom_records)
+    print(f"zoom_records {len(zoom_records)}")
 
 
 with DAG(
