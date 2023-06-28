@@ -3,6 +3,7 @@ from airflow.operators.python_operator import PythonOperator, ShortCircuitOperat
 from airflow.utils import dates, timezone, xcom
 
 import time
+import pendulum
 import os 
 from datetime import datetime
 from pymongo import MongoClient
@@ -100,12 +101,12 @@ def insert_zoom_records(**context):
     
     print(f"zoom_records {len(zoom_records)}")
 
-
+local_tz = pendulum.timezone("Asia/Seoul")
 with DAG(
     "live_chat_records_dag",
     description="실시간 녹화 강의 채팅내역 파이프라인",
     schedule_interval="0 19,20,21,22,23 * * *",
-    start_date=datetime(2023, 1, 1),
+    start_date=datetime(2023, 1, 1, tzinfo=local_tz),
     catchup=False,
 ) as dag:
     get_new_records_from_slack_message = PythonOperator(

@@ -5,3 +5,4 @@ RUN pip install selenium
 RUN pip install pymongo
 RUN pip install requests
 RUN pip install pytz
+RUN pip install pendulum
