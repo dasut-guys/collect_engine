@@ -1,1 +1,0 @@
-record_url = "https://yeardream3.slack.com/api/conversations.history?slack_route=T04SPMVG36U&_x_gantry=true&fp=d7"
