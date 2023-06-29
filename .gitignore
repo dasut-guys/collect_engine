@@ -3,3 +3,6 @@ test.ipynb
 Key_data.py
 .env
 airflow/logs/*
+yeardream_user.json
+node_modules
+package-lock.json
