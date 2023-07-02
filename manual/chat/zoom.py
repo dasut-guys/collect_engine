@@ -161,33 +161,39 @@ d_recomments_emojis = []
 for data in file_list:
     xmpplist = data['result']['xmppList']
     for chat in xmpplist:
-        if int(chat['time']) != 0:
-            name = extract_real_name(chat['senderName'])
+        
+        if int(chat['time']) == 0:
+            continue
+        
+        # comments
+        name = extract_real_name(chat['senderName'])
+        user_id = get_user_id(name)
+        korean_time = time_to_korean_date_time(chat['time'])
+        d_comments.append({'id' :chat['id'], 'user_id': user_id, 'content': chat['content'], 'time': korean_time})
+        
+        # comments_emojis
+        if 'chatEmojiDetailMap' in chat:
+            emoji_data = chat['chatEmojiDetailMap']
+            for emoji in emoji_data:
+                d_comments_emojis.append({'comment_id': chat['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
+
+        # recomments
+        if int(chat['commentTotal'] <= 0):
+            continue
+
+        recomments = chat['comments']
+        
+        for recomment in recomments:
+            name = extract_real_name(recomment['senderName'])
             user_id = get_user_id(name)
-            korean_time = time_to_korean_date_time(chat['time'])
-            d_comments.append({'id' :chat['id'], 'user_id': user_id, 'content': chat['content'], 'time': korean_time})
-            
-            if 'chatEmojiDetailMap' in chat:
-                emoji_data = chat['chatEmojiDetailMap']
+            korean_time = time_to_korean_date_time(recomment['time'])
+            d_recomments.append({'id':recomment['id'] , 'comment_id': chat['id'], 'user_id': user_id, 'content' : recomment['content'], 'time':korean_time})
+
+            # recomments_emojis
+            if 'chatEmojiDetailMap' in recomment:
+                emoji_data = recomment['chatEmojiDetailMap']
                 for emoji in emoji_data:
-                    # decoded_emoji = base64.b64decode(emoji).decode('utf8mb4')
-                    d_comments_emojis.append({'comment_id': chat['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
-
-            # recomments
-            if int(chat['commentTotal'])>0:
-                recomments = chat['comments']
-                
-                for recomment in recomments:
-                    name = extract_real_name(recomment['senderName'])
-                    user_id = get_user_id(name)
-                    korean_time = time_to_korean_date_time(recomment['time'])
-                    d_recomments.append({'id':recomment['id'] , 'comment_id': chat['id'], 'user_id': user_id, 'content' : recomment['content'], 'time':korean_time})
-
-                    if 'chatEmojiDetailMap' in recomment:
-                        emoji_data = recomment['chatEmojiDetailMap']
-                        for emoji in emoji_data:
-                            # decoded_emoji = base64.b64decode(emoji).decode('utf8mb4')
-                            d_recomments_emojis.append({'recomment_id': recomment['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
+                    d_recomments_emojis.append({'recomment_id': recomment['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
 
                     
 
