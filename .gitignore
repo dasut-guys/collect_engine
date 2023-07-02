@@ -6,3 +6,4 @@ airflow/logs/*
 yeardream_user.json
 node_modules
 package-lock.json
+*.xlsx
