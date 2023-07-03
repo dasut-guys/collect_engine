@@ -95,7 +95,7 @@ def get_zoom_records(**context):
     zoom_records = []
     for record in new_records:
         zoom_record = zoom_collector.get_zoom_records(
-            record["video_link"], record["password"], record["lecture_date"]
+            record["video_link"], record["password"],record['message'], record["lecture_date"]
         )
         zoom_records.append(zoom_record)
         time.sleep(10)
@@ -117,11 +117,13 @@ def insert_zoom_records(**context):
         )
 
     print(f"zoom_records {len(zoom_records)}")
+    context["task_instance"].xcom_push(key="zoom_records", value=zoom_records)
+    return zoom_records
 
 
 def insert_zoom_chats(**context):
     zoom_records = context["task_instance"].xcom_pull(
-        key="zoom_records", task_ids="get_zoom_records"
+        key="zoom_records", task_ids="insert_zoom_records"
     )
 
     chats = zoom_collector.pasre_zoom_chats(zoom_records)

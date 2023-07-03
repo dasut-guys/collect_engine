@@ -21,7 +21,6 @@ config = {
     },
 }
 
-
 def connect_database():
     try:
         return pymysql.connect(
@@ -54,7 +53,7 @@ def createtable():
 
     create_table_comments_emoji = """
     CREATE TABLE IF NOT EXISTS comments_emojis(
-        comments_id_fk VARCHAR(50) NOT NULL , 
+        comments_id_fk VARCHAR(50) NOT NULL, 
         emoji VARCHAR(100) NOT NULL, 
         emoji_count INT NOT NULL
     )
@@ -78,25 +77,6 @@ def createtable():
     )
     """
 
-    alter_table_comments = """
-    ALTER TABLE comments ADD CONSTRAINT fk_comments_users FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users(id)
-    """
-
-    alter_table_comments_emojis = """
-    ALTER TABLE comments_emojis ADD CONSTRAINT fk_commentsEmoji_comments FOREIGN KEY IF NOT EXISTS (comments_id_fk) REFERENCES comments (id)
-    """
-
-    alter_table_recomments = """
-    ALTER TABLE recomments ADD CONSTRAINT fk_recomments_comments FOREIGN KEY IF NOT EXISTS (comment_id_fk) REFERENCES comments (id)
-    """
-
-    alter_table_recomments_two = """
-    ALTER TABLE recomments ADD CONSTRAINT fk_recomments_user FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users (id)
-    """
-
-    alter_table_recomments_emojis = """
-    ALTER TABLE recomments_emojis ADD CONSTRAINT recommentsEmoji_recomments FOREIGN KEY IF NOT EXISTS (recomment_id_fk) REFERENCES recomments (id)
-    """
 
     cursor.execute(create_table_comments)
     cursor.execute(create_table_comments_emoji)
@@ -105,13 +85,6 @@ def createtable():
     cursor.fetchall()
     conn.commit()
 
-    cursor.execute(alter_table_comments)
-    cursor.execute(alter_table_comments_emojis)
-    cursor.execute(alter_table_recomments)
-    cursor.execute(alter_table_recomments_two)
-    cursor.execute(alter_table_recomments_emojis)
-    cursor.fetchall()
-    conn.commit()
 
 
 import json
@@ -129,12 +102,12 @@ db = client["zoom_app"]
 collection = db["records"]
 
 start_date = datetime(2023, 6, 2)
-end_date = datetime(2023, 7, 2)
+end_date = datetime(2023, 7, 5)
 query = {"created_at": {"$gte": start_date, "$lt": end_date}}
 mdb_cursor = collection.find(query)
 list_cur = list(mdb_cursor)
 json_data = dumps(list_cur, indent=2)
-
+print(json_data)
 
 file_list = json.loads(json_data)
 
@@ -220,7 +193,7 @@ for data in file_list:
                 )
 
         # recomments
-        if int(chat["commentTotal"] <= 0):
+        if int(chat["commentTotal"]) <= 0:
             continue
 
         recomments = chat["comments"]

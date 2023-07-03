@@ -24,7 +24,7 @@ class Zoom:
                 command_executor="http://remote_selenium:4444", options=fire_opts
             )
             driver.get(url)
-            time.sleep(20)
+            time.sleep(30)
 
             password_input = driver.find_element(By.XPATH, '//*[@id="passcode"]')
             ActionChains(driver).send_keys_to_element(
@@ -35,7 +35,7 @@ class Zoom:
 
             ok_button = driver.find_element(By.XPATH, '//*[@id="passcode_btn"]')
             ActionChains(driver).click(ok_button).perform()
-            time.sleep(10)
+            time.sleep(60)
 
             redirect_url = driver.current_url
             cookies = driver.get_cookies()
@@ -46,7 +46,7 @@ class Zoom:
                 new_cookies[cookie["name"]] = cookie["value"]
 
             response = requests.get(redirect_url, cookies=new_cookies)
-
+  
             newString = (
                 response.text.split("window.recordingMobilePlayData")[1]
                 .split("fileId")[1]
@@ -86,73 +86,67 @@ class Zoom:
         d_comments_emojis = []
         d_recomments = []
         d_recomments_emojis = []
-        if len(data) == 0:
-            return {
-                "comments": d_comments,
-                "comments_emojis": d_comments_emojis,
-                "recomments": d_recomments,
-                "recomments_emojis": d_recomments_emojis,
-            }
 
-        xmpplist = data["result"]["xmppList"]
-        for chat in xmpplist:
-            if int(chat["time"]) == 0:
-                continue
+        for d in data:
+            xmpplist = d["result"]["xmppList"]
+            for chat in xmpplist:
+                if int(chat["time"]) == 0:
+                    continue
 
-            # comments
-            name = self._extract_real_name(chat["senderName"])
-            korean_time = self._time_to_korean_date_time(chat["time"])
-            d_comments.append(
-                {
-                    "id": chat["id"],
-                    "name": name,
-                    "content": chat["content"],
-                    "time": korean_time,
-                }
-            )
-
-            # comments_emojis
-            if "chatEmojiDetailMap" in chat:
-                emoji_data = chat["chatEmojiDetailMap"]
-                for emoji in emoji_data:
-                    d_comments_emojis.append(
-                        {
-                            "comment_id": chat["id"],
-                            "emoji": emoji,
-                            "emoji_count": emoji_data[emoji]["count"],
-                        }
-                    )
-
-            # recomments
-            if int(chat["commentTotal"] <= 0):
-                continue
-
-            recomments = chat["comments"]
-
-            for recomment in recomments:
-                name = self._extract_real_name(recomment["senderName"])
-                korean_time = self.time_to_korean_date_time(recomment["time"])
-                d_recomments.append(
+                # comments
+                name = self._extract_real_name(chat["senderName"])
+                korean_time = self._time_to_korean_date_time(chat["time"])
+                d_comments.append(
                     {
-                        "id": recomment["id"],
+                        "id": chat["id"],
                         "name": name,
-                        "comment_id": chat["id"],
-                        "content": recomment["content"],
+                        "content": chat["content"],
                         "time": korean_time,
                     }
                 )
 
-                # recomments_emojis
-                if "chatEmojiDetailMap" in recomment:
-                    emoji_data = recomment["chatEmojiDetailMap"]
+                # comments_emojis
+                if "chatEmojiDetailMap" in chat:
+                    emoji_data = chat["chatEmojiDetailMap"]
                     for emoji in emoji_data:
-                        d_recomments_emojis.append(
+                        d_comments_emojis.append(
                             {
-                                "recomment_id": recomment["id"],
+                                "comment_id": chat["id"],
                                 "emoji": emoji,
                                 "emoji_count": emoji_data[emoji]["count"],
                             }
                         )
+
+                # recomments
+                if int(chat["commentTotal"]) <= 0:
+                    continue
+
+                recomments = chat["comments"]
+
+                for recomment in recomments:
+                    name = self._extract_real_name(recomment["senderName"])
+                    korean_time = self._time_to_korean_date_time(recomment["time"])
+                    d_recomments.append(
+                        {
+                            "id": recomment["id"],
+                            "name": name,
+                            "comment_id": chat["id"],
+                            "content": recomment["content"],
+                            "time": korean_time,
+                        }
+                    )
+
+                    # recomments_emojis
+                    if "chatEmojiDetailMap" in recomment:
+                        emoji_data = recomment["chatEmojiDetailMap"]
+                        for emoji in emoji_data:
+                            d_recomments_emojis.append(
+                                {
+                                    "recomment_id": recomment["id"],
+                                    "emoji": emoji,
+                                    "emoji_count": emoji_data[emoji]["count"],
+                                }
+                            )
 
             return {
                 "comments": d_comments,
