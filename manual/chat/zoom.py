@@ -2,93 +2,116 @@ import pymysql
 import pandas as pd
 from datetime import datetime, timedelta
 import base64
+from dotenv import load_dotenv
+import os
+
+load_dotenv(dotenv_path="./airflow/config/.env")
+config = {
+    "mongo": {"uri": os.environ.get("MONGO_URI")},
+    "slack": {
+        "token": os.environ.get("SLACK_API_TOKEN"),
+        "d": os.environ.get("SLACK_D"),
+        "d_s": os.environ.get("SLACK_D_S"),
+    },
+    "mysql": {
+        "host": os.environ.get("MYSQL_HOST"),
+        "user": os.environ.get("MYSQL_USER"),
+        "password": os.environ.get("MYSQL_PASSWORD"),
+        "db": os.environ.get("MYSQL_DB"),
+    },
+}
 
 
 def connect_database():
     try:
         return pymysql.connect(
-            host="localhost",
-            user="root",
-            password="root",
-            db="yeardream",
+            host=config["mysql"]["host"],
+            user=config["mysql"]["user"],
+            password=config["mysql"]["password"],
+            db=config["mysql"]["db"],
             charset="utf8mb4",
+            ssl={
+                "ca": "/etc/ssl/cert.pem",
+            },
         )
     except Exception as e:
         raise e
 
 
-create_table_comments = """
-CREATE TABLE IF NOT EXISTS comments(
-    id VARCHAR(50) PRIMARY KEY, 
-    user_id_fk VARCHAR(20), 
-    content TEXT NOT NULL, 
-    time DATETIME NOT NULL
-)
-"""
-
-create_table_comments_emoji = """
-CREATE TABLE IF NOT EXISTS comments_emojis(
-    comments_id_fk VARCHAR(50) NOT NULL , 
-    emoji VARCHAR(100) NOT NULL, 
-    emoji_count INT NOT NULL
-)
-"""
-
-create_table_recomments = """
-CREATE TABLE IF NOT EXISTS recomments(
-    id VARCHAR(50) PRIMARY KEY, 
-    comment_id_fk VARCHAR(50) NOT NULL, 
-    user_id_fk VARCHAR(20), 
-    content TEXT NOT NULL, 
-    time DATETIME NOT NULL
-)
-"""
-
-create_table_recomments_emoji = """
-CREATE TABLE IF NOT EXISTS recomments_emojis(
-    recomment_id_fk VARCHAR(50) NOT NULL, 
-    emoji VARCHAR(100) NOT NULL, 
-    emoji_count INT NOT NULL
-)
-"""
-
-alter_table_comments = """
-ALTER TABLE comments ADD CONSTRAINT fk_comments_users FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users(id)
-"""
-
-alter_table_comments_emojis = """
-ALTER TABLE comments_emojis ADD CONSTRAINT fk_commentsEmoji_comments FOREIGN KEY IF NOT EXISTS (comments_id_fk) REFERENCES comments (id)
-"""
-
-alter_table_recomments = """
-ALTER TABLE recomments ADD CONSTRAINT fk_recomments_comments FOREIGN KEY IF NOT EXISTS (comment_id_fk) REFERENCES comments (id)
-"""
-
-alter_table_recomments_two = """
-ALTER TABLE recomments ADD CONSTRAINT fk_recomments_user FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users (id)
-"""
-
-alter_table_recomments_emojis = """
-ALTER TABLE recomments_emojis ADD CONSTRAINT recommentsEmoji_recomments FOREIGN KEY IF NOT EXISTS (recomment_id_fk) REFERENCES recomments (id)
-"""
-
 conn = connect_database()
 cursor = conn.cursor()
 
-cursor.execute(create_table_comments)
-cursor.execute(create_table_comments_emoji)
-cursor.execute(create_table_recomments)
-cursor.execute(create_table_recomments_emoji)
-cursor.fetchall()
-conn.commit()
 
-cursor.execute(alter_table_comments)
-cursor.execute(alter_table_comments_emojis)
-cursor.execute(alter_table_recomments)
-cursor.execute(alter_table_recomments_two)
-cursor.execute(alter_table_recomments_emojis)
-cursor.fetchall()
-conn.commit()
+def createtable():
+    create_table_comments = """
+    CREATE TABLE IF NOT EXISTS comments(
+        id VARCHAR(50) PRIMARY KEY, 
+        user_id_fk VARCHAR(20), 
+        content TEXT NOT NULL, 
+        time DATETIME NOT NULL
+    )
+    """
+
+    create_table_comments_emoji = """
+    CREATE TABLE IF NOT EXISTS comments_emojis(
+        comments_id_fk VARCHAR(50) NOT NULL , 
+        emoji VARCHAR(100) NOT NULL, 
+        emoji_count INT NOT NULL
+    )
+    """
+
+    create_table_recomments = """
+    CREATE TABLE IF NOT EXISTS recomments(
+        id VARCHAR(50) PRIMARY KEY, 
+        comment_id_fk VARCHAR(50) NOT NULL, 
+        user_id_fk VARCHAR(20), 
+        content TEXT NOT NULL, 
+        time DATETIME NOT NULL
+    )
+    """
+
+    create_table_recomments_emoji = """
+    CREATE TABLE IF NOT EXISTS recomments_emojis(
+        recomment_id_fk VARCHAR(50) NOT NULL, 
+        emoji VARCHAR(100) NOT NULL, 
+        emoji_count INT NOT NULL
+    )
+    """
+
+    alter_table_comments = """
+    ALTER TABLE comments ADD CONSTRAINT fk_comments_users FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users(id)
+    """
+
+    alter_table_comments_emojis = """
+    ALTER TABLE comments_emojis ADD CONSTRAINT fk_commentsEmoji_comments FOREIGN KEY IF NOT EXISTS (comments_id_fk) REFERENCES comments (id)
+    """
+
+    alter_table_recomments = """
+    ALTER TABLE recomments ADD CONSTRAINT fk_recomments_comments FOREIGN KEY IF NOT EXISTS (comment_id_fk) REFERENCES comments (id)
+    """
+
+    alter_table_recomments_two = """
+    ALTER TABLE recomments ADD CONSTRAINT fk_recomments_user FOREIGN KEY IF NOT EXISTS (user_id_fk) REFERENCES users (id)
+    """
+
+    alter_table_recomments_emojis = """
+    ALTER TABLE recomments_emojis ADD CONSTRAINT recommentsEmoji_recomments FOREIGN KEY IF NOT EXISTS (recomment_id_fk) REFERENCES recomments (id)
+    """
+
+    cursor.execute(create_table_comments)
+    cursor.execute(create_table_comments_emoji)
+    cursor.execute(create_table_recomments)
+    cursor.execute(create_table_recomments_emoji)
+    cursor.fetchall()
+    conn.commit()
+
+    cursor.execute(alter_table_comments)
+    cursor.execute(alter_table_comments_emojis)
+    cursor.execute(alter_table_recomments)
+    cursor.execute(alter_table_recomments_two)
+    cursor.execute(alter_table_recomments_emojis)
+    cursor.fetchall()
+    conn.commit()
 
 
 import json

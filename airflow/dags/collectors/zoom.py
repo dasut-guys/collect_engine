@@ -86,6 +86,13 @@ class Zoom:
         d_comments_emojis = []
         d_recomments = []
         d_recomments_emojis = []
+        if len(data) == 0:
+            return {
+                "comments": d_comments,
+                "comments_emojis": d_comments_emojis,
+                "recomments": d_recomments,
+                "recomments_emojis": d_recomments_emojis,
+            }
 
         xmpplist = data["result"]["xmppList"]
         for chat in xmpplist:

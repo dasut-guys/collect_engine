@@ -42,7 +42,8 @@ mysql_client = pymysql.connect(
     user=config["mysql"]["user"],
     password=config["mysql"]["password"],
     db=config["mysql"]["db"],
-    chaset="utf8mb4",
+    charset="utf8mb4",
+    ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
 )
 ### collectors ###
 
@@ -58,8 +59,6 @@ zoom_collector = Zoom()
 slack_repo = SlackRepository(client)
 zoom_repo = ZoomRepository(client)
 stats_repo = StatsRepository(mysql_client)
-
-stats_repo.init_tables()
 
 
 def today_live_records(**context):
@@ -124,7 +123,8 @@ def insert_zoom_chats(**context):
     zoom_records = context["task_instance"].xcom_pull(
         key="zoom_records", task_ids="get_zoom_records"
     )
-    chats = zoom_collector.pasre_zoom_chats(zoom_records["result"])
+
+    chats = zoom_collector.pasre_zoom_chats(zoom_records)
 
     ## name -> user_id
     for comment in chats["comments"]:
@@ -203,4 +203,15 @@ with DAG(
         provide_context=True,
     )
 
-    get_new_records_from_slack_message >> get_zoom_records >> insert_zoom_records
+    insert_zoom_chats = PythonOperator(
+        task_id="insert_zoom_chats",
+        python_callable=insert_zoom_chats,
+        provide_context=True,
+    )
+
+    (
+        get_new_records_from_slack_message
+        >> get_zoom_records
+        >> insert_zoom_records
+        >> insert_zoom_chats
+    )
