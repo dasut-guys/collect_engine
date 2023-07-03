@@ -1,14 +1,22 @@
 import pymysql
 import pandas as pd
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 import base64
+
 
 def connect_database():
     try:
-        return pymysql.connect(host='localhost', user='root', password='root',db='yeardream',charset='utf8mb4')
+        return pymysql.connect(
+            host="localhost",
+            user="root",
+            password="root",
+            db="yeardream",
+            charset="utf8mb4",
+        )
     except Exception as e:
         raise e
-    
+
+
 create_table_comments = """
 CREATE TABLE IF NOT EXISTS comments(
     id VARCHAR(50) PRIMARY KEY, 
@@ -36,7 +44,7 @@ CREATE TABLE IF NOT EXISTS recomments(
 )
 """
 
-create_table_recomments_emoji ="""
+create_table_recomments_emoji = """
 CREATE TABLE IF NOT EXISTS recomments_emojis(
     recomment_id_fk VARCHAR(50) NOT NULL, 
     emoji VARCHAR(100) NOT NULL, 
@@ -90,19 +98,16 @@ import pandas as pd
 from bson.json_util import dumps
 from datetime import datetime, timedelta
 
-client = pymongo.MongoClient('mongodb+srv://read:Yeardream23@yeardream.zkm7jta.mongodb.net/?retryWrites=true&w=majority')
+client = pymongo.MongoClient(
+    "mongodb+srv://read:Yeardream23@yeardream.zkm7jta.mongodb.net/?retryWrites=true&w=majority"
+)
 
 db = client["zoom_app"]
 collection = db["records"]
 
-start_date = datetime(2023,6,2)
-end_date = datetime(2023,7,2)
-query = {
-    "created_at":{
-        "$gte": start_date,
-        "$lt": end_date
-    }
-}
+start_date = datetime(2023, 6, 2)
+end_date = datetime(2023, 7, 2)
+query = {"created_at": {"$gte": start_date, "$lt": end_date}}
 mdb_cursor = collection.find(query)
 list_cur = list(mdb_cursor)
 json_data = dumps(list_cur, indent=2)
@@ -117,8 +122,9 @@ def get_user_id(name):
 
     if res is None:
         return None
-    
+
     return res[0]
+
 
 def time_to_korean_date_time(time):
     epoch_time = time / 1000  # 밀리초를 초로 변환
@@ -126,14 +132,15 @@ def time_to_korean_date_time(time):
     korean_time = utc_time + timedelta(hours=9)  # 한국 시간으로 변환 (UTC+9)
     return korean_time
 
+
 def extract_real_name(nickname):
     positions = ["온라인", "강사", "LM", "오프라인", "운영진"]
 
     is_reversed = False
     for position in positions:
         if nickname.find(position) == 0:
-            is_reversed =True
-    
+            is_reversed = True
+
     name = nickname
 
     if "_" in nickname:
@@ -159,78 +166,111 @@ d_recomments = []
 d_recomments_emojis = []
 
 for data in file_list:
-    xmpplist = data['result']['xmppList']
+    xmpplist = data["result"]["xmppList"]
     for chat in xmpplist:
-        
-        if int(chat['time']) == 0:
+        if int(chat["time"]) == 0:
             continue
-        
+
         # comments
-        name = extract_real_name(chat['senderName'])
+        name = extract_real_name(chat["senderName"])
         user_id = get_user_id(name)
-        korean_time = time_to_korean_date_time(chat['time'])
-        d_comments.append({'id' :chat['id'], 'user_id': user_id, 'content': chat['content'], 'time': korean_time})
-        
+        korean_time = time_to_korean_date_time(chat["time"])
+        d_comments.append(
+            {
+                "id": chat["id"],
+                "user_id": user_id,
+                "content": chat["content"],
+                "time": korean_time,
+            }
+        )
+
         # comments_emojis
-        if 'chatEmojiDetailMap' in chat:
-            emoji_data = chat['chatEmojiDetailMap']
+        if "chatEmojiDetailMap" in chat:
+            emoji_data = chat["chatEmojiDetailMap"]
             for emoji in emoji_data:
-                d_comments_emojis.append({'comment_id': chat['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
+                d_comments_emojis.append(
+                    {
+                        "comment_id": chat["id"],
+                        "emoji": emoji,
+                        "emoji_count": emoji_data[emoji]["count"],
+                    }
+                )
 
         # recomments
-        if int(chat['commentTotal'] <= 0):
+        if int(chat["commentTotal"] <= 0):
             continue
 
-        recomments = chat['comments']
-        
+        recomments = chat["comments"]
+
         for recomment in recomments:
-            name = extract_real_name(recomment['senderName'])
+            name = extract_real_name(recomment["senderName"])
             user_id = get_user_id(name)
-            korean_time = time_to_korean_date_time(recomment['time'])
-            d_recomments.append({'id':recomment['id'] , 'comment_id': chat['id'], 'user_id': user_id, 'content' : recomment['content'], 'time':korean_time})
+            korean_time = time_to_korean_date_time(recomment["time"])
+            d_recomments.append(
+                {
+                    "id": recomment["id"],
+                    "comment_id": chat["id"],
+                    "user_id": user_id,
+                    "content": recomment["content"],
+                    "time": korean_time,
+                }
+            )
 
             # recomments_emojis
-            if 'chatEmojiDetailMap' in recomment:
-                emoji_data = recomment['chatEmojiDetailMap']
+            if "chatEmojiDetailMap" in recomment:
+                emoji_data = recomment["chatEmojiDetailMap"]
                 for emoji in emoji_data:
-                    d_recomments_emojis.append({'recomment_id': recomment['id'], 'emoji':emoji, 'emoji_count': emoji_data[emoji]['count']})
+                    d_recomments_emojis.append(
+                        {
+                            "recomment_id": recomment["id"],
+                            "emoji": emoji,
+                            "emoji_count": emoji_data[emoji]["count"],
+                        }
+                    )
 
-                    
 
 for v in d_comments:
     print(v)
     try:
-        cursor.execute("INSERT INTO comments (id, user_id_fk, content, time) VALUES (%s, %s, %s, %s) ", (v['id'], v['user_id'], v['content'], v['time']))
+        cursor.execute(
+            "INSERT INTO comments (id, user_id_fk, content, time) VALUES (%s, %s, %s, %s) ",
+            (v["id"], v["user_id"], v["content"], v["time"]),
+        )
     except:
         pass
-    
+
 
 for v in d_comments_emojis:
     print(v)
     try:
-        cursor.execute("INSERT INTO comments_emojis (comments_id_fk, emoji, emoji_count) VALUES(%s, %s ,%s)", 
-                   (v['comment_id'], v['emoji'], v['emoji_count']))
+        cursor.execute(
+            "INSERT INTO comments_emojis (comments_id_fk, emoji, emoji_count) VALUES(%s, %s ,%s)",
+            (v["comment_id"], v["emoji"], v["emoji_count"]),
+        )
     except:
         pass
-    
+
 for v in d_recomments:
     print(v)
     try:
-        cursor.execute("INSERT INTO recomments (id, comment_id_fk, user_id_fk, content, time) VALUES (%s, %s, %s, %s, %s)",
-                   (v['id'], v['comment_id'], v['user_id'], v['content'], v['time']))
+        cursor.execute(
+            "INSERT INTO recomments (id, comment_id_fk, user_id_fk, content, time) VALUES (%s, %s, %s, %s, %s)",
+            (v["id"], v["comment_id"], v["user_id"], v["content"], v["time"]),
+        )
     except:
         pass
 
 for v in d_recomments_emojis:
     try:
-        cursor.execute("INSERT INTO recomments_emojis (recomment_id_fk, emoji, emoji_count) VALUES(%s, %s ,%s)", 
-                   (v['recomment_id'], v['emoji'], v['emoji_count']))
+        cursor.execute(
+            "INSERT INTO recomments_emojis (recomment_id_fk, emoji, emoji_count) VALUES(%s, %s ,%s)",
+            (v["recomment_id"], v["emoji"], v["emoji_count"]),
+        )
     except:
         pass
-    
+
 cursor.fetchall()
 conn.commit()
 
 cursor.close()
 conn.close()
-
