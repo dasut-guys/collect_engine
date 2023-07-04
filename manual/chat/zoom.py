@@ -95,7 +95,7 @@ def run():
     from datetime import datetime, timedelta
 
     client = pymongo.MongoClient(
-        "mongodb+srv://read:Yeardream23@yeardream.zkm7jta.mongodb.net/?retryWrites=true&w=majority"
+        config['mongo']['uri']
     )
 
     db = client["zoom_app"]
