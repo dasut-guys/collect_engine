@@ -161,6 +161,7 @@ def insert_zoom_chats(**context):
             stats_repo.insert_recomments(
                 recomment["id"],
                 recomment["comment_id"],
+                recomment["user_id"],
                 recomment["content"],
                 recomment["time"],
             )
