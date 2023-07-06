@@ -17,12 +17,16 @@ class Zoom:
         password: str,
         message: str,
         lecture_date: str,
+        isLocal=False,
     ):
         try:
             fire_opts = webdriver.FirefoxOptions()
-            driver = webdriver.Remote(
-                command_executor="http://remote_selenium:4444", options=fire_opts
-            )
+
+            remote_url = "http://remote_selenium:4444"
+
+            if isLocal:
+                remote_url = "http://localhost:4444"
+            driver = webdriver.Remote(command_executor=remote_url, options=fire_opts)
             driver.get(url)
             time.sleep(30)
 
@@ -35,7 +39,7 @@ class Zoom:
 
             ok_button = driver.find_element(By.XPATH, '//*[@id="passcode_btn"]')
             ActionChains(driver).click(ok_button).perform()
-            time.sleep(60)
+            time.sleep(150)
 
             redirect_url = driver.current_url
             cookies = driver.get_cookies()
@@ -46,7 +50,7 @@ class Zoom:
                 new_cookies[cookie["name"]] = cookie["value"]
 
             response = requests.get(redirect_url, cookies=new_cookies)
-  
+
             newString = (
                 response.text.split("window.recordingMobilePlayData")[1]
                 .split("fileId")[1]
@@ -148,12 +152,12 @@ class Zoom:
                                 }
                             )
 
-            return {
-                "comments": d_comments,
-                "comments_emojis": d_comments_emojis,
-                "recomments": d_recomments,
-                "recomments_emojis": d_recomments_emojis,
-            }
+        return {
+            "comments": d_comments,
+            "comments_emojis": d_comments_emojis,
+            "recomments": d_recomments,
+            "recomments_emojis": d_recomments_emojis,
+        }
 
     def _time_to_korean_date_time(self, time):
         epoch_time = time / 1000  # 밀리초를 초로 변환
