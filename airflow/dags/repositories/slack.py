@@ -43,4 +43,23 @@ class SlackRepository:
             collection.insert_one(record_data)
         except:
             raise Exception('insert error')
-
+    
+    def insert_class_one_info(
+        self,
+        class_code,
+        class_name,
+        message
+    ):
+        try:
+            # 특정 DB와 Collection 선택
+            db = self.mongoClient["slack_app"]  # your_db_name
+            collection = db["class_one_info"]  # collection 이름
+            record_data = {
+                "class_code":class_code,
+                "class_name":class_name,
+                "raw_data": message
+            }
+            # Document 추가
+            collection.insert_one(record_data)
+        except:
+            raise Exception('insert error')

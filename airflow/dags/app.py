@@ -167,7 +167,24 @@ def insert_zoom_chats(zoom_records):
 
         except:
             pass
-
+        
+def insert_class_one_infos():
+    class_one_name ={           
+    "CS":"C04T5CDJ51D",
+    "ai_math":"C04T5CESFTR",
+    "ai_sql":"C04TNCE1X9A",
+    "ai_py":"C04TYH5UETT",
+    "git":"C05486621TP",
+    "ai_py_project":"C055D8K7R6K",
+    "ai_mini_data":"C056LP428J2"
+    }
+    for code in class_one_name:
+        live_records = slack_collector.get_class_one_info(code)
+        slack_repo.insert_class_one_info(
+            class_one_name[code],
+            code,
+            live_records
+        )
 
 new_records = today_live_records()
 print(new_records)
@@ -176,3 +193,4 @@ print(z)
 y = insert_zoom_records(z)
 insert_zoom_chats(y)
 mysql_client.close()
+# insert_class_one_infos()

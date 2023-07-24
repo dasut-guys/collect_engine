@@ -19,7 +19,15 @@ class SlackAPI:
             "Cookie": f"d={d};" + f"d-s={d_s}",
         }
 
-        self.channelMap = {"live_zoom_records": "C050VA606UV"}
+        self.channelMap = {
+            "live_zoom_records": "C050VA606UV",
+            "CS":"C04T5CDJ51D",
+            "ai_math":"C04T5CESFTR",
+            "ai_sql":"C04TNCE1X9A",
+            "ai_py":"C04TYH5UETT",
+            "git":"C05486621TP",
+            "ai_py_project":"C055D8K7R6K",
+            "ai_mini_data":"C056LP428J2"}
 
     def get_conversations_history(
         self, channel, start_time_unix, end_time_unix
@@ -42,5 +50,4 @@ class SlackAPI:
         url = self.base_url + "/" + self.conversation_history_api + "?" + query_string
         response = requests.request("POST", url, headers=self.headers, data=payload)
         data_row = response.json()
-        print(response, data_row)
         return data_row["messages"]

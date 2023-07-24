@@ -81,4 +81,6 @@ class SlackParser:
             })
             
         return result
-
+        ## TO-DO
+        ## subtype : channel_join 항목 체크해서 데이터에서 빼기
+    

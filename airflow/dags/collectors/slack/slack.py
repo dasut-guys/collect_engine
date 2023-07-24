@@ -27,3 +27,20 @@ class Slack:
 
         live_records = self.parser.live_records_info(raw_data)
         return live_records
+    
+    def get_class_one_info(self,class_one_name):
+        # 현재 시간을 가져옴
+        current_time = datetime.now()
+        # 당일 00시로 변경
+        start_of_day = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        # 유닉스 시간 계산
+        start_time_unix = 1678546800
+        end_time_unix = int(time.time())
+        
+        raw_data = self.api.get_conversations_history(
+            class_one_name,
+            start_time_unix=start_time_unix,
+            end_time_unix=end_time_unix,
+        )
+        
+        return raw_data
